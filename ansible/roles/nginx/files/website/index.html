@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Дипломный проект — Шмагин М.Ю.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700&family=Inter:wght@300;400;600;700&display=swap">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0a0e1a;
+      --panel:   #0f1628;
+      --accent:  #00d4ff;
+      --green:   #00ff88;
+      --purple:  #a855f7;
+      --text:    #e2e8f0;
+      --muted:   #64748b;
+      --border:  rgba(0,212,255,0.18);
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── animated gradient background ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 20%, rgba(0,212,255,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 60% at 80% 80%, rgba(168,85,247,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 50% 50%, rgba(0,255,136,0.04) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── grid lines ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,212,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── canvas for particles ── */
+    #particles { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+
+    /* ── layout ── */
+    .page {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      gap: 32px;
+    }
+
+    /* ── top badge ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(0,212,255,0.06);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      animation: fadeDown 0.6s ease both;
+    }
+    .badge-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+      animation: pulse 2s infinite;
+    }
+
+    /* ── hero card ── */
+    .card {
+      width: 100%;
+      max-width: 760px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 52px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.7s 0.1s ease both;
+      box-shadow: 0 0 60px rgba(0,212,255,0.06), 0 20px 60px rgba(0,0,0,0.5);
+    }
+
+    /* corner glow */
+    .card::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 220px; height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,212,255,0.15), transparent 70%);
+      pointer-events: none;
+    }
+    .card::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; left: -60px;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(168,85,247,0.12), transparent 70%);
+      pointer-events: none;
+    }
+
+    /* top bar of card */
+    .card-bar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 32px;
+    }
+    .card-bar span {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+    }
+    .card-bar .r { background: #ff5f57; }
+    .card-bar .y { background: #febc2e; }
+    .card-bar .g { background: #28c840; }
+    .card-bar-label {
+      margin-left: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .card-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    .name {
+      font-size: clamp(2rem, 6vw, 3.4rem);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #ffffff 0%, var(--accent) 50%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .course {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      font-weight: 300;
+      color: var(--muted);
+      margin-bottom: 32px;
+    }
+    .course strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* ── divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin-bottom: 32px;
+    }
+
+    /* ── tech stack pills ── */
+    .stack-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--text);
+      transition: border-color 0.2s, background 0.2s, transform 0.2s;
+      cursor: default;
+    }
+    .pill:hover {
+      border-color: var(--accent);
+      background: rgba(0,212,255,0.08);
+      transform: translateY(-2px);
+    }
+    .pill-icon { font-size: 15px; }
+
+    /* ── info grid ── */
+    .info-grid {
+      width: 100%;
+      max-width: 760px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      animation: fadeUp 0.7s 0.25s ease both;
+    }
+
+    .info-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .info-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 20px rgba(0,212,255,0.1);
+    }
+    .info-icon { font-size: 22px; margin-bottom: 4px; }
+    .info-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .info-value {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* ── terminal block ── */
+    .terminal {
+      width: 100%;
+      max-width: 760px;
+      background: #060a14;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      animation: fadeUp 0.7s 0.4s ease both;
+    }
+    .term-header {
+      background: #0d1526;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      border-bottom: 1px solid var(--border);
+    }
+    .term-header span { width: 12px; height: 12px; border-radius: 50%; }
+    .term-title {
+      margin-left: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .term-body {
+      padding: 20px 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13.5px;
+      line-height: 1.9;
+    }
+    .t-prompt { color: var(--green); }
+    .t-cmd    { color: var(--text); }
+    .t-out    { color: var(--muted); }
+    .t-val    { color: var(--accent); }
+    .t-ok     { color: var(--green); }
+    .cursor {
+      display: inline-block;
+      width: 9px; height: 15px;
+      background: var(--accent);
+      vertical-align: middle;
+      margin-left: 2px;
+      animation: blink 1s step-end infinite;
+    }
+
+    /* ── footer ── */
+    footer {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      animation: fadeUp 0.7s 0.5s ease both;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* ── keyframes ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--green); }
+      50%       { opacity: 0.5; box-shadow: 0 0 4px var(--green); }
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    @media (max-width: 600px) {
+      .card { padding: 32px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<main class="page">
+
+  <!-- badge -->
+  <div class="badge">
+    <span class="badge-dot"></span>
+    ДИПЛОМНЫЙ ПРОЕКТ · 2026
+  </div>
+
+  <!-- hero card -->
+  <div class="card">
+    <div class="card-bar">
+      <span class="r"></span>
+      <span class="y"></span>
+      <span class="g"></span>
+      <span class="card-bar-label">~/diplom/index.html</span>
+    </div>
+
+    <div class="card-label">// Автор</div>
+    <h1 class="name">Шмагин М.Ю.</h1>
+    <p class="course">Курс: <strong>DevOps-инженер с нуля</strong> &nbsp;·&nbsp; Нетология</p>
+
+    <div class="divider"></div>
+
+    <div class="stack-title">// Stack &amp; Tools</div>
+    <div class="stack">
+      <span class="pill"><span class="pill-icon">🐧</span>Linux</span>
+      <span class="pill"><span class="pill-icon">🐳</span>Docker</span>
+      <span class="pill"><span class="pill-icon">☸️</span>Kubernetes</span>
+      <span class="pill"><span class="pill-icon">⚙️</span>Ansible</span>
+      <span class="pill"><span class="pill-icon">🔁</span>CI/CD</span>
+      <span class="pill"><span class="pill-icon">📦</span>Terraform</span>
+      <span class="pill"><span class="pill-icon">🌐</span>Nginx</span>
+      <span class="pill"><span class="pill-icon">📊</span>Prometheus</span>
+      <span class="pill"><span class="pill-icon">📈</span>Grafana</span>
+      <span class="pill"><span class="pill-icon">🔀</span>Git</span>
+    </div>
+  </div>
+
+  <!-- info cards -->
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="info-icon">🎓</div>
+      <div class="info-label">Учебное заведение</div>
+      <div class="info-value">Нетология</div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">🚀</div>
+      <div class="info-label">Специализация</div>
+      <div class="info-value">DevOps-инженер</div>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">🏗️</div>
+      <div class="info-label">Тип проекта</div>
+      <div class="info-value">Дипломная работа</div>
+    </div>
+  </div>
+
+  <!-- terminal -->
+  <div class="terminal">
+    <div class="term-header">
+      <span style="background:#ff5f57"></span>
+      <span style="background:#febc2e"></span>
+      <span style="background:#28c840"></span>
+      <span class="term-title">bash — шмагин@devops:~</span>
+    </div>
+    <div class="term-body">
+      <div><span class="t-prompt">shmagin@devops:~$</span> <span class="t-cmd">whoami</span></div>
+      <div class="t-val">Шмагин М.Ю. — DevOps-инженер</div>
+      <br>
+      <div><span class="t-prompt">shmagin@devops:~$</span> <span class="t-cmd">cat project.yml</span></div>
+      <div><span class="t-out">name:</span> <span class="t-val">Дипломный проект</span></div>
+      <div><span class="t-out">course:</span> <span class="t-val">DevOps-инженер с нуля</span></div>
+      <div><span class="t-out">stack:</span> <span class="t-val">Ansible · Docker · K8s · Nginx · CI/CD</span></div>
+      <div><span class="t-out">status:</span> <span class="t-ok">✔ DEPLOYED</span></div>
+      <br>
+      <div><span class="t-prompt">shmagin@devops:~$</span> <span class="cursor"></span></div>
+    </div>
+  </div>
+
+  <!-- footer -->
+  <footer>
+    &copy; 2026 &nbsp;·&nbsp; Шмагин М.Ю. &nbsp;·&nbsp; DevOps-инженер с нуля &nbsp;·&nbsp; Нетология
+  </footer>
+
+</main>
+
+<script>
+// Lightweight canvas particles — no external dependencies
+(function(){
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let W, H, pts = [];
+
+  function resize(){
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function rand(a, b){ return a + Math.random() * (b - a); }
+
+  function init(){
+    pts = [];
+    const n = Math.floor((W * H) / 14000);
+    for(let i = 0; i < n; i++){
+      pts.push({
+        x: rand(0, W), y: rand(0, H),
+        vx: rand(-0.3, 0.3), vy: rand(-0.3, 0.3),
+        r: rand(1, 2.2),
+        alpha: rand(0.2, 0.7)
+      });
+    }
+  }
+
+  function draw(){
+    ctx.clearRect(0, 0, W, H);
+
+    // connect nearby
+    for(let i = 0; i < pts.length; i++){
+      for(let j = i+1; j < pts.length; j++){
+        const dx = pts[i].x - pts[j].x;
+        const dy = pts[i].y - pts[j].y;
+        const d  = Math.sqrt(dx*dx + dy*dy);
+        if(d < 110){
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(0,212,255,${0.12 * (1 - d/110)})`;
+          ctx.lineWidth = 0.6;
+          ctx.moveTo(pts[i].x, pts[i].y);
+          ctx.lineTo(pts[j].x, pts[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // draw dots
+    for(const p of pts){
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(0,212,255,${p.alpha})`;
+      ctx.fill();
+
+      p.x += p.vx;
+      p.y += p.vy;
+      if(p.x < 0) p.x = W;
+      if(p.x > W) p.x = 0;
+      if(p.y < 0) p.y = H;
+      if(p.y > H) p.y = 0;
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', ()=>{ resize(); init(); });
+  resize(); init(); draw();
+})();
+</script>
+
+</body>
+</html>
